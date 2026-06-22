@@ -1,10 +1,16 @@
-﻿namespace EmployeeApiLearning.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace EmployeeApiLearning.DTO
 {
-    public class Employee
+    public class EmployeeDto
     {
-        public string EmployeeCode { get; set; } = string.Empty;
+        [Required]
         public string Name { get; set; } = string.Empty;
+
+        [Required]
         public string Department { get; set; } = string.Empty;
+
+        [Required]
         public decimal Salary { get; set; }
     }
 }

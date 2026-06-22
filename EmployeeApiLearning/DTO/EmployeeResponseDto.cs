@@ -1,6 +1,6 @@
-﻿namespace EmployeeApiLearning.Models
+﻿namespace EmployeeApiLearning.DTO
 {
-    public class Employee
+    public class EmployeeResponseDto
     {
         public string EmployeeCode { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
