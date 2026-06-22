@@ -27,5 +27,21 @@ namespace EmployeeApiLearning.Services
                 Salary = e.Salary,
             }).ToList();
         }
+        public async Task<EmployeeResponseDto?> GetEmployeeByCode(string employeeCode)
+        {
+            var employee = await _context.Employees
+                        .FirstOrDefaultAsync(x => x.EmployeeCode == employeeCode);
+
+            if (employee == null)
+                return null;
+
+            return new EmployeeResponseDto
+            {
+                EmployeeCode = employee.EmployeeCode,
+                Name = employee.Name,
+                Department = employee.Department,
+                Salary = employee.Salary
+            };
+        }
     }
 }

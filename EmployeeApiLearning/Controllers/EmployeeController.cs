@@ -23,5 +23,16 @@ namespace EmployeeApiLearning.Controllers
 
             return Ok(employees);
         }
+
+        [HttpGet("{employeeCode}")]
+        public async Task<IActionResult> GetEmployeeByCode(string employeeCode)
+        {
+            var employee = await _employeeService.GetEmployeeByCode(employeeCode);
+
+            if (employee == null)
+                return NotFound();
+
+            return Ok(employee);
+        }
     }
 }
