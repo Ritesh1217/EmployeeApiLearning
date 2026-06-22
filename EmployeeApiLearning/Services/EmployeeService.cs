@@ -2,6 +2,7 @@
 using EmployeeApiLearning.Models;
 using Microsoft.EntityFrameworkCore;
 using EmployeeApiLearning.Services;
+using EmployeeApiLearning.DTO;
 
 namespace EmployeeApiLearning.Services
 {
@@ -14,9 +15,17 @@ namespace EmployeeApiLearning.Services
             _context = context;
         }
 
-        public async Task<List<Employee>> GetAllEmployees()
+        public async Task<List<EmployeeResponseDto>> GetAllEmployees()
         {
-            return await _context.Employees.ToListAsync();
+            var employees = await _context.Employees.ToListAsync();
+
+            return employees.Select(e => new EmployeeResponseDto
+            {
+                EmployeeCode = e.EmployeeCode,
+                Name = e.Name,
+                Department = e.Department,
+                Salary = e.Salary,
+            }).ToList();
         }
     }
 }
