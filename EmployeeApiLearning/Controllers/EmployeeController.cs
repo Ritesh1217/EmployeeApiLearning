@@ -1,4 +1,5 @@
 ﻿using EmployeeApiLearning.Data;
+using EmployeeApiLearning.DTO;
 using EmployeeApiLearning.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,13 @@ namespace EmployeeApiLearning.Controllers
 
             if (employee == null)
                 return NotFound();
+
+            return Ok(employee);
+        }
+        [HttpPost]
+        public async Task<IActionResult> AddEmployee(EmployeeDto employeeDto)
+        {
+            var employee = await _employeeService.AddEmployee(employeeDto);
 
             return Ok(employee);
         }

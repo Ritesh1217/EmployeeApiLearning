@@ -43,5 +43,28 @@ namespace EmployeeApiLearning.Services
                 Salary = employee.Salary
             };
         }
+        public async Task<EmployeeResponseDto> AddEmployee(EmployeeDto employeeDto)
+        {
+            int count = await _context.Employees.CountAsync();
+
+            Employee employee = new Employee
+            {
+                EmployeeCode = $"EMP{(count + 1):D5}",
+                Name = employeeDto.Name,
+                Department = employeeDto.Department,
+                Salary = employeeDto.Salary
+            };
+
+            _context.Employees.Add(employee);
+            await _context.SaveChangesAsync();
+
+            return new EmployeeResponseDto
+            {
+                EmployeeCode = employee.EmployeeCode,
+                Name = employee.Name,
+                Department = employee.Department,
+                Salary = employeeDto.Salary
+            };
+        }
     }
 }
