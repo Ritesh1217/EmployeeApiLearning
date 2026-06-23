@@ -1,4 +1,5 @@
 using EmployeeApiLearning.Data;
+using EmployeeApiLearning.Helpers;
 using EmployeeApiLearning.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,8 @@ var connectionString =
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();                
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();     
+builder.Services.AddScoped<IEmployeeHelper, EmployeeHelper>();
 
 var app = builder.Build();
 

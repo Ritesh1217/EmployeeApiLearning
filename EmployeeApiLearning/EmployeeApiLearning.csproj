@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <Folder Include="Configurations\" />
-    <Folder Include="Helpers\" />
     <Folder Include="Middleware\" />
   </ItemGroup>
 

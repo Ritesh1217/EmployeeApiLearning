@@ -3,16 +3,19 @@ using EmployeeApiLearning.Models;
 using Microsoft.EntityFrameworkCore;
 using EmployeeApiLearning.Services;
 using EmployeeApiLearning.DTO;
+using EmployeeApiLearning.Helpers;
 
 namespace EmployeeApiLearning.Services
 {
     public class EmployeeService : IEmployeeService
     {
         private readonly AppDbContext _context;
+        private readonly IEmployeeHelper _employeeHelper;
 
-        public EmployeeService(AppDbContext context)
+        public EmployeeService(AppDbContext context, IEmployeeHelper employeeHelper)
         {
             _context = context;
+            _employeeHelper = employeeHelper;
         }
 
         public async Task<List<EmployeeResponseDto>> GetAllEmployees()
@@ -49,7 +52,7 @@ namespace EmployeeApiLearning.Services
 
             Employee employee = new Employee
             {
-                EmployeeCode = $"EMP{(count + 1):D5}",
+                EmployeeCode = _employeeHelper.GenerateEmployeeCode(count + 1),
                 Name = employeeDto.Name,
                 Department = employeeDto.Department,
                 Salary = employeeDto.Salary
