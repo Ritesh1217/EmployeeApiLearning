@@ -66,5 +66,26 @@ namespace EmployeeApiLearning.Services
                 Salary = employeeDto.Salary
             };
         }
+        public async Task<EmployeeResponseDto?> UpdateEmployee(string employeeCode, EmployeeDto employeeDto)
+        {
+            var employee = await _context.Employees.FirstOrDefaultAsync(x => x.EmployeeCode == employeeCode);
+
+            if (employee == null)
+                return null;
+
+            employee.Name = employeeDto.Name;
+            employee.Department = employeeDto.Department;
+            employee.Salary = employeeDto.Salary;
+
+            await _context.SaveChangesAsync();
+
+            return new EmployeeResponseDto
+            {
+                EmployeeCode = employee.EmployeeCode,
+                Name = employee.Name,
+                Department = employeeDto.Department,
+                Salary = employeeDto.Salary
+            };
+        }
     }
 }

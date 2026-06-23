@@ -8,5 +8,6 @@ namespace EmployeeApiLearning.Services
         Task<List<EmployeeResponseDto>> GetAllEmployees();
         Task<EmployeeResponseDto?> GetEmployeeByCode(string employeeCode);
         Task<EmployeeResponseDto> AddEmployee(EmployeeDto employeeDto);
+        Task<EmployeeResponseDto?> UpdateEmployee(string employeeCode, EmployeeDto employeeDto);
     }
 }

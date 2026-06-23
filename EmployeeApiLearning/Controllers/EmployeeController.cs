@@ -42,5 +42,15 @@ namespace EmployeeApiLearning.Controllers
 
             return Ok(employee);
         }
+        [HttpPut("{employeeCode}")]
+        public async Task<IActionResult> UpdateEmployee(string employeeCode, EmployeeDto employeeDto)
+        {
+            var employee = await _employeeService.UpdateEmployee(employeeCode, employeeDto);
+
+            if(employee == null)
+                return NotFound();
+
+            return Ok(employee);
+        }
     }
 }
