@@ -52,5 +52,15 @@ namespace EmployeeApiLearning.Controllers
 
             return Ok(employee);
         }
+        [HttpDelete("{employeeCode}")]
+        public async Task<IActionResult> DeleteEmployee(string employeeCode)
+        {
+            var deleted = await _employeeService.DeleteEmployee(employeeCode);
+
+            if(!deleted)
+                return NotFound();
+
+            return NoContent();
+        }
     }
 }

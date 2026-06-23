@@ -87,5 +87,19 @@ namespace EmployeeApiLearning.Services
                 Salary = employeeDto.Salary
             };
         }
+        public async Task<bool> DeleteEmployee(string employeeCode)
+        {
+            var employee = await _context.Employees.FirstOrDefaultAsync(x => x.EmployeeCode == employeeCode);
+
+            if (employee == null) 
+                return false;
+
+            _context.Employees.Remove(employee);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+
+        }
     }
 }
