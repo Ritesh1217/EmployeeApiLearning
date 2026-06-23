@@ -1,3 +1,4 @@
+using EmployeeApiLearning.Configurations;
 using EmployeeApiLearning.Data;
 using EmployeeApiLearning.Helpers;
 using EmployeeApiLearning.Services;
@@ -20,6 +21,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();     
 builder.Services.AddScoped<IEmployeeHelper, EmployeeHelper>();
+builder.Services.AddAutoMapper(typeof(EmployeeMappingProfile));
 
 var app = builder.Build();
 

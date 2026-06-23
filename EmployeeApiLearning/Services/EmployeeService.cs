@@ -1,9 +1,10 @@
-﻿using EmployeeApiLearning.Data;
-using EmployeeApiLearning.Models;
-using Microsoft.EntityFrameworkCore;
-using EmployeeApiLearning.Services;
+﻿using AutoMapper;
+using EmployeeApiLearning.Data;
 using EmployeeApiLearning.DTO;
 using EmployeeApiLearning.Helpers;
+using EmployeeApiLearning.Models;
+using EmployeeApiLearning.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeApiLearning.Services
 {
@@ -11,24 +12,22 @@ namespace EmployeeApiLearning.Services
     {
         private readonly AppDbContext _context;
         private readonly IEmployeeHelper _employeeHelper;
+        private readonly IMapper _mapper;
 
-        public EmployeeService(AppDbContext context, IEmployeeHelper employeeHelper)
+        public EmployeeService(AppDbContext context, 
+            IEmployeeHelper employeeHelper,
+            IMapper mapper)
         {
             _context = context;
             _employeeHelper = employeeHelper;
+            _mapper = mapper;
         }
 
         public async Task<List<EmployeeResponseDto>> GetAllEmployees()
         {
             var employees = await _context.Employees.ToListAsync();
 
-            return employees.Select(e => new EmployeeResponseDto
-            {
-                EmployeeCode = e.EmployeeCode,
-                Name = e.Name,
-                Department = e.Department,
-                Salary = e.Salary,
-            }).ToList();
+            return _mapper.Map<List<EmployeeResponseDto>>(employees);
         }
         public async Task<EmployeeResponseDto?> GetEmployeeByCode(string employeeCode)
         {
@@ -38,36 +37,20 @@ namespace EmployeeApiLearning.Services
             if (employee == null)
                 return null;
 
-            return new EmployeeResponseDto
-            {
-                EmployeeCode = employee.EmployeeCode,
-                Name = employee.Name,
-                Department = employee.Department,
-                Salary = employee.Salary
-            };
+           return _mapper.Map<EmployeeResponseDto>(employee);
         }
         public async Task<EmployeeResponseDto> AddEmployee(EmployeeDto employeeDto)
         {
             int count = await _context.Employees.CountAsync();
 
-            Employee employee = new Employee
-            {
-                EmployeeCode = _employeeHelper.GenerateEmployeeCode(count + 1),
-                Name = employeeDto.Name,
-                Department = employeeDto.Department,
-                Salary = employeeDto.Salary
-            };
+            Employee employee = _mapper.Map<Employee>(employeeDto);
+
+            employee.EmployeeCode = _employeeHelper.GenerateEmployeeCode(count +  1);
 
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
 
-            return new EmployeeResponseDto
-            {
-                EmployeeCode = employee.EmployeeCode,
-                Name = employee.Name,
-                Department = employee.Department,
-                Salary = employeeDto.Salary
-            };
+            return _mapper.Map<EmployeeResponseDto>(employee);
         }
         public async Task<EmployeeResponseDto?> UpdateEmployee(string employeeCode, EmployeeDto employeeDto)
         {
@@ -76,19 +59,11 @@ namespace EmployeeApiLearning.Services
             if (employee == null)
                 return null;
 
-            employee.Name = employeeDto.Name;
-            employee.Department = employeeDto.Department;
-            employee.Salary = employeeDto.Salary;
+            _mapper.Map(employeeDto, employee);
 
             await _context.SaveChangesAsync();
 
-            return new EmployeeResponseDto
-            {
-                EmployeeCode = employee.EmployeeCode,
-                Name = employee.Name,
-                Department = employeeDto.Department,
-                Salary = employeeDto.Salary
-            };
+            return _mapper.Map<EmployeeResponseDto>(employee);
         }
         public async Task<bool> DeleteEmployee(string employeeCode)
         {
