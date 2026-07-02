@@ -1,7 +1,5 @@
 using EmployeeApiLearning.Configurations;
 using EmployeeApiLearning.Data;
-using EmployeeApiLearning.Helpers;
-using EmployeeApiLearning.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,8 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection");
@@ -19,9 +15,13 @@ var connectionString =
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();     
-builder.Services.AddScoped<IEmployeeHelper, EmployeeHelper>();
+builder.Services.AddApplicationServices();
+
 builder.Services.AddAutoMapper(typeof(EmployeeMappingProfile));
+
+builder.Services.AddSwaggerDocumentation();
+
+builder.Services.AddCorsPolicy();
 
 var app = builder.Build();
 
@@ -33,6 +33,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 
