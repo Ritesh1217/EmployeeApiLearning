@@ -1,6 +1,7 @@
 using EmployeeApiLearning.Configurations;
 using EmployeeApiLearning.Data;
 using Microsoft.EntityFrameworkCore;
+using EmployeeApiLearning.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
