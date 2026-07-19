@@ -1,5 +1,6 @@
 ﻿using EmployeeApiLearning.Helpers;
 using EmployeeApiLearning.Services;
+using EmployeeApiLearning.Repositories;
 
 namespace EmployeeApiLearning.Configurations
 {
@@ -9,6 +10,7 @@ namespace EmployeeApiLearning.Configurations
         {
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IEmployeeHelper, EmployeeHelper>();
+            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 
             return services;
         }
