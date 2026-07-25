@@ -24,6 +24,8 @@ builder.Services.AddSwaggerDocumentation();
 
 builder.Services.AddCorsPolicy();
 
+builder.Services.AddMemoryCache();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
