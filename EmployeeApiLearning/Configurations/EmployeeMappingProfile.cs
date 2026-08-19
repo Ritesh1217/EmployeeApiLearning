@@ -11,6 +11,14 @@ namespace EmployeeApiLearning.Configurations
             CreateMap<Employee, EmployeeResponseDto>();
 
             CreateMap<EmployeeDto, Employee>();
+
+            CreateMap<RegisterDto, AppUser>()
+                .ForMember(
+                    destination => destination.PasswordHash,
+                    options => options.Ignore())
+                .ForMember(
+                    destination => destination.Role,
+                    options => options.Ignore());
         }
     }
 }

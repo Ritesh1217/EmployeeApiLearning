@@ -36,8 +36,9 @@ namespace EmployeeApiLearning.Data
             modelBuilder.Entity<AppUser>()
                 .HasOne(u => u.Employee)
                 .WithOne(e =>  e.User)
-                .HasPrincipalKey<Employee>(e => e.EmployeeCode)
+                .HasPrincipalKey<AppUser>(e => e.EmployeeCode)
                 .HasForeignKey<Employee>(u => u.EmployeeCode);
+                
         }
     }
 }

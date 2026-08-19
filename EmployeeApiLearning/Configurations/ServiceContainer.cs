@@ -11,6 +11,8 @@ namespace EmployeeApiLearning.Configurations
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IEmployeeHelper, EmployeeHelper>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IAuthRepository, AuthRepository>();
 
             return services;
         }

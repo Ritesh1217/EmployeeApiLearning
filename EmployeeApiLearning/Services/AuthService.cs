@@ -1,0 +1,60 @@
+﻿using AutoMapper;
+using EmployeeApiLearning.DTO;
+using EmployeeApiLearning.Models;
+using EmployeeApiLearning.Repositories;
+
+namespace EmployeeApiLearning.Services
+{
+    public class AuthService : IAuthService
+    {
+        private readonly IAuthRepository _authRepository;
+        private readonly IEmployeeRepository _employeeRepository;
+        private readonly IMapper _mapper;
+
+        public AuthService(IAuthRepository authRepository, IEmployeeRepository employeeRepository, IMapper mapper)
+        {
+            _authRepository = authRepository;
+            _employeeRepository = employeeRepository;
+            _mapper = mapper;
+        }
+
+        public async Task<bool> Register(RegisterDto registerDto)
+        {
+            //checking user name already exist or not
+            var existingUser = await _authRepository.GetUserByUsername(registerDto.Username);
+
+            if (existingUser != null)
+                return false;
+
+            //checking employee is already exist or not
+            var employee = await _employeeRepository.GetEmployeeByCode(registerDto.EmployeeCode);
+
+            if (employee == null) 
+                return false;
+
+            //employee name must have to match username
+            if (!employee.Name.Equals(registerDto.Username, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            //checking employee has already userAccount
+            var employeeUser = await _authRepository.GetUserByEmployeeCode(registerDto.EmployeeCode);
+
+            if (employeeUser != null)
+                return false;
+
+            //convert RegisterDto into AppUser
+            var user = _mapper.Map<AppUser>(registerDto);
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
+
+            user.Role = "user";
+
+            //save user in database
+            await _authRepository.AddUser(user);
+
+            return true;
+        }
+    }
+}
