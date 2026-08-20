@@ -56,5 +56,24 @@ namespace EmployeeApiLearning.Services
 
             return true;
         }
+
+        public async Task<AuthResponseDto?> Login(LoginDto loginDto)
+        {
+            var user = await _authRepository.GetUserByUsername(loginDto.Username);
+
+            if(user == null) 
+                return null;
+
+            bool passwordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash);
+
+            if(!passwordValid)
+                return null;
+
+            return new AuthResponseDto
+            {
+                Role = user.Role,
+                EmployeeCode = user.EmployeeCode
+            };
+        }
     }
 }

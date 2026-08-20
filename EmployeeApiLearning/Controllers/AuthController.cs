@@ -32,5 +32,19 @@ namespace EmployeeApiLearning.Controllers
                 message = "User registered successfully"
             });
         }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDto login)
+        {
+            var result = await _authService.Login(login);
+
+            if(result == null)
+            {
+                return Unauthorized(new
+                {
+                    message = "Invalid username or password"
+                });
+            }
+            return Ok(result);
+        }
     }
 }
