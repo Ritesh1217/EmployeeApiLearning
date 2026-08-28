@@ -10,12 +10,18 @@ namespace EmployeeApiLearning.Services
         private readonly IAuthRepository _authRepository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IMapper _mapper;
+        private readonly IJwtService _jwtService;
 
-        public AuthService(IAuthRepository authRepository, IEmployeeRepository employeeRepository, IMapper mapper)
+        public AuthService(
+            IAuthRepository authRepository, 
+            IEmployeeRepository employeeRepository, 
+            IMapper mapper,
+            IJwtService jwtService)
         {
             _authRepository = authRepository;
             _employeeRepository = employeeRepository;
             _mapper = mapper;
+            _jwtService = jwtService;
         }
 
         public async Task<bool> Register(RegisterDto registerDto)
@@ -69,8 +75,14 @@ namespace EmployeeApiLearning.Services
             if(!passwordValid)
                 return null;
 
+            var token = _jwtService.GenerateToken(
+                loginDto.Username,
+                user.Role,
+                user.EmployeeCode);
+            
             return new AuthResponseDto
             {
+                AccessToken = token,
                 Role = user.Role,
                 EmployeeCode = user.EmployeeCode
             };

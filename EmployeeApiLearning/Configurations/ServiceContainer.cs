@@ -13,6 +13,7 @@ namespace EmployeeApiLearning.Configurations
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<IJwtService, JwtService>();
 
             return services;
         }
