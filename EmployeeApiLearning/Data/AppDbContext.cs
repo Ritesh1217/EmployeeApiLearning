@@ -13,6 +13,7 @@ namespace EmployeeApiLearning.Data
 
         public DbSet<Employee> Employees { get; set; }
         public DbSet<AppUser> Users { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(
             ModelBuilder modelBuilder)

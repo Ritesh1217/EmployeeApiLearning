@@ -27,6 +27,11 @@ namespace EmployeeApiLearning.Repositories
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
         }
+        public async Task UpdateUser(AppUser user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
         public async Task SaveChanges()
         {
             await _context.SaveChangesAsync();

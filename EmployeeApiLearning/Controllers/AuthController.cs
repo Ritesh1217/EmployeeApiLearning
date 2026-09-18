@@ -44,7 +44,21 @@ namespace EmployeeApiLearning.Controllers
                     message = "Invalid username or password"
                 });
             }
+            SetRefreshTokenCookie(result.RefreshToken);
             return Ok(result);
+        }
+        private void SetRefreshTokenCookie(string token)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // Kyunki aap https://localhost:7001 use kar rahe hain
+                SameSite = SameSiteMode.Lax, // Localhost par Lax 100% save hota hai
+                Expires = DateTimeOffset.UtcNow.AddDays(7),
+                Path = "/" // Pure domain pe accessible banayein
+            };
+
+            Response.Cookies.Append("refreshToken", token, cookieOptions);
         }
     }
 }
