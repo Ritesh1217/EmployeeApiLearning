@@ -20,18 +20,13 @@ namespace EmployeeApiLearning.Repositories
                 x.ExpiresAt > DateTime.UtcNow);
         }
 
-        public async Task AddAsync(RefreshToken token)
+        public void Add(RefreshToken token)
         {
-            await _context.RefreshTokens.AddAsync(token);
+            _context.RefreshTokens.Add(token);
         }
-        public async Task UpdateAsync(RefreshToken token)
+        public void Update(RefreshToken token)
         {
             _context.RefreshTokens.Update(token);
-            await Task.CompletedTask;
-        }
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
         }
     }
 }

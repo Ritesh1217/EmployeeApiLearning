@@ -4,12 +4,13 @@ namespace EmployeeApiLearning.Repositories
 {
     public interface IEmployeeRepository
     {
-        Task<List<Employee>> GetALlEmployees();
-        Task<Employee?> GetEmployeeByCode(string employeeCode);
-        Task<int> GetEmployeeCount();
-        Task AddEmployee(Employee employee);
-        Task SaveChanges();
-        Task DeleteEmployee(Employee employee);
+        Task<List<Employee>> GetAllAsync();
+        Task<Employee?> GetByIdAsync(int id);
+        Task<Employee?> GetByCodeAsync(string employeeCode);
+        Task<int> GetCountAsync();
+        void Add(Employee employee);
+        void Update(Employee employee);
+        Task<bool> DeleteAsync(int id);
 
     }
 }

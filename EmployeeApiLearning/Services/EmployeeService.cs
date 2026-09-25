@@ -16,6 +16,7 @@ namespace EmployeeApiLearning.Services
         private readonly IMapper _mapper;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IMemoryCache _cache;
+        private readonly IUnitOfWork _unitOfWork;
 
         private const string EmployeeListCacheKey = "EmployeeList";
              
@@ -23,12 +24,14 @@ namespace EmployeeApiLearning.Services
             IEmployeeHelper employeeHelper,
             IMapper mapper,
             IEmployeeRepository employeeRepository,
-            IMemoryCache cache)
+            IMemoryCache cache,
+            IUnitOfWork unitOfWork)
         {
             _employeeHelper = employeeHelper;
             _mapper = mapper;
             _employeeRepository = employeeRepository;
             _cache = cache;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<EmployeeResponseDto>> GetAllEmployees()
@@ -39,7 +42,7 @@ namespace EmployeeApiLearning.Services
             {
                 return cachedEmployees!;
             }
-            var employees = await _employeeRepository.GetALlEmployees();
+            var employees = await _unitOfWork.Employees.GetAllAsync();
 
             var employeeDtos = _mapper.Map<List<EmployeeResponseDto>>(employees);
 
@@ -49,7 +52,7 @@ namespace EmployeeApiLearning.Services
         }
         public async Task<EmployeeResponseDto?> GetEmployeeByCode(string employeeCode)
         {
-            var employee = await _employeeRepository.GetEmployeeByCode(employeeCode);
+            var employee = await _unitOfWork.Employees.GetByCodeAsync(employeeCode);
 
             if (employee == null)
                 return null;
@@ -58,13 +61,13 @@ namespace EmployeeApiLearning.Services
         }
         public async Task<EmployeeResponseDto> AddEmployee(EmployeeDto employeeDto)
         {
-            int count = await _employeeRepository.GetEmployeeCount();
+            int count = await _unitOfWork.Employees.GetCountAsync();
 
             Employee employee = _mapper.Map<Employee>(employeeDto);
 
             employee.EmployeeCode = _employeeHelper.GenerateEmployeeCode(count +  1);
 
-            await _employeeRepository.AddEmployee(employee);
+            _employeeRepository.Add(employee);
 
             _cache.Remove(EmployeeListCacheKey);
 
@@ -72,14 +75,14 @@ namespace EmployeeApiLearning.Services
         }
         public async Task<EmployeeResponseDto?> UpdateEmployee(string employeeCode, EmployeeDto employeeDto)
         {
-            var employee = await _employeeRepository.GetEmployeeByCode(employeeCode);
+            var employee = await _unitOfWork.Employees.GetByCodeAsync(employeeCode);
 
             if (employee == null)
                 return null;
 
             _mapper.Map(employeeDto, employee);
 
-            await _employeeRepository.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             _cache.Remove(EmployeeListCacheKey);
 
@@ -87,14 +90,18 @@ namespace EmployeeApiLearning.Services
         }
         public async Task<bool> DeleteEmployee(string employeeCode)
         {
-            var employee = await _employeeRepository.GetEmployeeByCode(employeeCode);
+            var employee = await _unitOfWork.Employees.GetByCodeAsync(employeeCode);
 
             if (employee == null) 
                 return false;
 
-            await _employeeRepository.DeleteEmployee(employee);
+            var deleted = await _unitOfWork.Employees.DeleteAsync(employee.Id);
 
-            _cache.Remove(EmployeeListCacheKey);
+            if(deleted)
+            {
+                await _unitOfWork.SaveChangesAsync();
+                return true;
+            }
 
             return true;
 

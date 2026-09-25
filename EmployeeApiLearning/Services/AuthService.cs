@@ -8,20 +8,20 @@ namespace EmployeeApiLearning.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IAuthRepository _authRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IMapper _mapper;
         private readonly IJwtService _jwtService;
 
         public AuthService(
-            IAuthRepository authRepository, 
+            IUserRepository userRepository, 
             IEmployeeRepository employeeRepository, 
             IRefreshTokenRepository refreshTokenRepository,
             IMapper mapper,
             IJwtService jwtService)
         {
-            _authRepository = authRepository;
+            _userRepository = userRepository;
             _employeeRepository = employeeRepository;
             _refreshTokenRepository = refreshTokenRepository;
             _mapper = mapper;
@@ -31,13 +31,13 @@ namespace EmployeeApiLearning.Services
         public async Task<bool> Register(RegisterDto registerDto)
         {
             //checking user name already exist or not
-            var existingUser = await _authRepository.GetUserByUsername(registerDto.Username);
+            var existingUser = await _userRepository.GetByUsernameAsync(registerDto.Username);
 
             if (existingUser != null)
                 return false;
 
             //checking employee is already exist or not
-            var employee = await _employeeRepository.GetEmployeeByCode(registerDto.EmployeeCode);
+            var employee = await _employeeRepository.GetByCodeAsync(registerDto.EmployeeCode);
 
             if (employee == null) 
                 return false;
@@ -49,10 +49,10 @@ namespace EmployeeApiLearning.Services
             }
 
             //checking employee has already userAccount
-            var employeeUser = await _authRepository.GetUserByEmployeeCode(registerDto.EmployeeCode);
+            //var employeeUser = await _authRepository.GetUserByEmployeeCode(registerDto.EmployeeCode);
 
-            if (employeeUser != null)
-                return false;
+            //if (employeeUser != null)
+            //    return false;
 
             //convert RegisterDto into AppUser
             var user = _mapper.Map<AppUser>(registerDto);
@@ -62,14 +62,14 @@ namespace EmployeeApiLearning.Services
             user.Role = "user";
 
             //save user in database
-            await _authRepository.AddUser(user);
+            _userRepository.Add(user);
 
             return true;
         }
 
         public async Task<AuthResponseDto?> Login(LoginDto loginDto)
         {
-            var user = await _authRepository.GetUserByUsername(loginDto.Username);
+            var user = await _userRepository.GetByUsernameAsync(loginDto.Username);
 
             if(user == null) 
                 return null;
@@ -110,8 +110,7 @@ namespace EmployeeApiLearning.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _refreshTokenRepository.AddAsync(refreshToken);
-            await _refreshTokenRepository.SaveChangesAsync();
+             _refreshTokenRepository.Add(refreshToken);
 
             return tokenString;
         }
@@ -122,13 +121,13 @@ namespace EmployeeApiLearning.Services
             if (storedToken == null)
                 return null;
 
-            var user = await _authRepository.GetUserByUsername(storedToken.Username);
+            var user = await _userRepository.GetByUsernameAsync(storedToken.Username);
             if (user == null)
                 return null;
 
             // 2. Token Rotation: Purane token ko invalidate (revoked) mark karo taaki dobara use na ho
             storedToken.IsRevoked = true;
-            await _refreshTokenRepository.UpdateAsync(storedToken);
+            _refreshTokenRepository.Update(storedToken);
 
             // 3. Naye tokens generate karo
             var newAccessToken = _jwtService.GenerateToken(
@@ -137,7 +136,6 @@ namespace EmployeeApiLearning.Services
                 user.EmployeeCode);
 
             var newRefreshToken = await GenerateAndSaveRefreshToken(user.Username);
-            await _refreshTokenRepository.SaveChangesAsync();
 
             return new AuthResponseDto
             {
@@ -155,8 +153,7 @@ namespace EmployeeApiLearning.Services
 
             // Token ko database me revoke (cancel) karo
             storedToken.IsRevoked = true;
-            await _refreshTokenRepository.UpdateAsync(storedToken);
-            await _refreshTokenRepository.SaveChangesAsync();
+            _refreshTokenRepository.Update(storedToken);
 
             return true;
         }

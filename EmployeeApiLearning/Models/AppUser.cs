@@ -8,6 +8,8 @@
         public string Role { get; set; } = "User";
         public string EmployeeCode { get; set; } = string.Empty;
         public string? Email { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiry { get; set; }
         public Employee Employee { get; set; } = null!;
     }
 }
