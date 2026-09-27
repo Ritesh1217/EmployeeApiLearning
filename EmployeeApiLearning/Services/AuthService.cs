@@ -8,22 +8,16 @@ namespace EmployeeApiLearning.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IEmployeeRepository _employeeRepository;
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IJwtService _jwtService;
 
         public AuthService(
-            IUserRepository userRepository, 
-            IEmployeeRepository employeeRepository, 
-            IRefreshTokenRepository refreshTokenRepository,
+            IUnitOfWork unitOfWork,
             IMapper mapper,
             IJwtService jwtService)
         {
-            _userRepository = userRepository;
-            _employeeRepository = employeeRepository;
-            _refreshTokenRepository = refreshTokenRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _jwtService = jwtService;
         }
@@ -31,13 +25,13 @@ namespace EmployeeApiLearning.Services
         public async Task<bool> Register(RegisterDto registerDto)
         {
             //checking user name already exist or not
-            var existingUser = await _userRepository.GetByUsernameAsync(registerDto.Username);
-
-            if (existingUser != null)
+            if (await _unitOfWork.Users.UsernameExistsAsync(registerDto.Username))
                 return false;
 
             //checking employee is already exist or not
-            var employee = await _employeeRepository.GetByCodeAsync(registerDto.EmployeeCode);
+            var employee = await _unitOfWork.Employees.GetByCodeAsync(registerDto.EmployeeCode);
+            if (employee == null) 
+                return false;
 
             if (employee == null) 
                 return false;
@@ -48,12 +42,6 @@ namespace EmployeeApiLearning.Services
                 return false;
             }
 
-            //checking employee has already userAccount
-            //var employeeUser = await _authRepository.GetUserByEmployeeCode(registerDto.EmployeeCode);
-
-            //if (employeeUser != null)
-            //    return false;
-
             //convert RegisterDto into AppUser
             var user = _mapper.Map<AppUser>(registerDto);
 
@@ -62,14 +50,15 @@ namespace EmployeeApiLearning.Services
             user.Role = "user";
 
             //save user in database
-            _userRepository.Add(user);
+            _unitOfWork.Users.Add(user);
+            await _unitOfWork.SaveChangesAsync();
 
             return true;
         }
 
         public async Task<AuthResponseDto?> Login(LoginDto loginDto)
         {
-            var user = await _userRepository.GetByUsernameAsync(loginDto.Username);
+            var user = await _unitOfWork.Users.GetByUsernameAsync(loginDto.Username);
 
             if(user == null) 
                 return null;
@@ -110,24 +99,25 @@ namespace EmployeeApiLearning.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-             _refreshTokenRepository.Add(refreshToken);
+             _unitOfWork.RefreshTokens.Add(refreshToken);
+            await _unitOfWork.SaveChangesAsync();
 
             return tokenString;
         }
         public async Task<AuthResponseDto?> Refresh(string refreshToken)
         {
             // 1. DB se check karo ki token valid hai ya nahi (exist karta ho, revoked na ho, expire na hua ho)
-            var storedToken = await _refreshTokenRepository.GetValidTokenAsync(refreshToken);
+            var storedToken = await _unitOfWork.RefreshTokens.GetValidTokenAsync(refreshToken);
             if (storedToken == null)
                 return null;
 
-            var user = await _userRepository.GetByUsernameAsync(storedToken.Username);
+            var user = await _unitOfWork.Users.GetByUsernameAsync(storedToken.Username);
             if (user == null)
                 return null;
 
             // 2. Token Rotation: Purane token ko invalidate (revoked) mark karo taaki dobara use na ho
             storedToken.IsRevoked = true;
-            _refreshTokenRepository.Update(storedToken);
+            _unitOfWork.RefreshTokens.Update(storedToken);
 
             // 3. Naye tokens generate karo
             var newAccessToken = _jwtService.GenerateToken(
@@ -136,6 +126,8 @@ namespace EmployeeApiLearning.Services
                 user.EmployeeCode);
 
             var newRefreshToken = await GenerateAndSaveRefreshToken(user.Username);
+
+            await _unitOfWork.SaveChangesAsync();
 
             return new AuthResponseDto
             {
@@ -147,13 +139,14 @@ namespace EmployeeApiLearning.Services
         }
         public async Task<bool> Revoke(string refreshToken)
         {
-            var storedToken = await _refreshTokenRepository.GetValidTokenAsync(refreshToken);
+            var storedToken = await _unitOfWork.RefreshTokens.GetValidTokenAsync(refreshToken);
             if (storedToken == null)
                 return false;
 
             // Token ko database me revoke (cancel) karo
             storedToken.IsRevoked = true;
-            _refreshTokenRepository.Update(storedToken);
+            _unitOfWork.RefreshTokens.Update(storedToken);
+            await _unitOfWork.SaveChangesAsync();
 
             return true;
         }
