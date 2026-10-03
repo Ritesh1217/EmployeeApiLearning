@@ -1,0 +1,17 @@
+﻿using System.Text.Json;
+
+namespace EmployeeApiLearning.DTO
+{
+    public class ErrorResponseDto
+    {
+        public int StatusCode { get; set; }
+        public string Message { get; set; } = string.Empty;
+
+        public string? Detailed {  get; set; }
+
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize(this);
+        }
+    }
+}
