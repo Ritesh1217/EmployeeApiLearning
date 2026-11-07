@@ -25,13 +25,44 @@ namespace EmployeeApiLearning.Repositories
             _context = context;
             _memoryCache = memoryCache;
         }
-        public async Task<List<Employee>> GetAllAsync()
+        public async Task<(List<Employee> Employees, int TotalCount)> GetPagedAsync(EmployeeQueryParameters queryParameters)
         {
-            if(_memoryCache.TryGetValue("Employees", out List<Employee>? employees) && employees != null)
-                return employees;
-           employees = await _context.Employees.ToListAsync();
-           _memoryCache.Set("Employees", employees, cacheOptions);
-           return employees;
+            // 1. Base IQueryable without tracking (Database SQL banega, memory me load nahi hoga)
+            IQueryable<Employee> query = _context.Employees.AsNoTracking();
+
+            // 2. Department Filter (Exact Match)
+            if (!string.IsNullOrWhiteSpace(queryParameters.Department))
+            {
+                query = query.Where(e => e.Department.ToLower() == queryParameters.Department.ToLower());
+            }
+
+            // 3. Search filter(Name or EmployeeCode)
+            if (!string.IsNullOrWhiteSpace(queryParameters.SearchTerm))
+            {
+                var search = queryParameters.SearchTerm.Trim().ToLower();
+                query = query.Where(e => e.Name.ToLower().Contains(search) || 
+                                         e.EmployeeCode.ToLower().Contains(search));
+            }
+
+            // 4. Total Count(pagination)
+            var totalCount = await query.CountAsync();
+
+            // 5. Dynamic sorting
+            query = queryParameters.SortBy?.ToLower() switch
+            {
+                "salary" => queryParameters.IsDescending ? query.OrderByDescending(e => e.Salary) : query.OrderBy(e => e.Salary),
+                "department" => queryParameters.IsDescending ? query.OrderByDescending(e => e.Department) : query.OrderBy(e => e.Department),
+                "employeecode" => queryParameters.IsDescending ? query.OrderByDescending(e => e.EmployeeCode) : query.OrderBy(e => e.EmployeeCode),
+                _ => queryParameters.IsDescending ? query.OrderByDescending(e => e.Name) : query.OrderBy(e => e.Name)
+            };
+
+            // 6. Pagination
+            var employees = await query
+                .Skip((queryParameters.PageNumber - 1) * queryParameters.PageSize)
+                .Take(queryParameters.PageSize)
+                .ToListAsync();
+
+            return (employees, totalCount);
         }
         public async Task<Employee?> GetByIdAsync(int id)
         {

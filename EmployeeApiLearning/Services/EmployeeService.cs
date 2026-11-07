@@ -26,11 +26,20 @@ namespace EmployeeApiLearning.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<EmployeeResponseDto>> GetAllEmployees()
+        public async Task<PagedResultDto<EmployeeResponseDto>> GetAllEmployees(EmployeeQueryParameters queryParameters)
         {
-            var employees = await _unitOfWork.Employees.GetAllAsync();
+            //Added filtered/paged employee
+            var (employees, totalCount) = await _unitOfWork.Employees.GetPagedAsync(queryParameters);
 
-            return _mapper.Map<List<EmployeeResponseDto>>(employees);
+            var mappedItems = _mapper.Map<List<EmployeeResponseDto>>(employees);
+
+            return new PagedResultDto<EmployeeResponseDto>
+            {
+                Items = mappedItems,
+                TotalCount = totalCount,
+                PageNumber = queryParameters.PageNumber,
+                PageSize = queryParameters.PageSize
+            };
         }
         public async Task<EmployeeResponseDto?> GetEmployeeByCode(string employeeCode)
         {

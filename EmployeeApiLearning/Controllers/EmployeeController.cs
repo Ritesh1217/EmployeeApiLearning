@@ -21,15 +21,15 @@ namespace EmployeeApiLearning.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetEmployees()
+        public async Task<IActionResult> GetEmployees([FromQuery] EmployeeQueryParameters queryParameters)
         {
             var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
 
             // 1. Admin gets all employees
             if (string.Equals(role, EmployeeApiLearning.Constants.Roles.Admin, StringComparison.OrdinalIgnoreCase))
             {
-                var allEmployees = await _employeeService.GetAllEmployees();
-                return Ok(allEmployees);
+                var pagedEmployees = await _employeeService.GetAllEmployees(queryParameters);
+                return Ok(pagedEmployees);
             }
 
             // 2. Regular User gets only their own record
@@ -46,7 +46,13 @@ namespace EmployeeApiLearning.Controllers
             }
 
             // Wrapped in a list so the response format stays consistent (array of objects)
-            return Ok(new List<EmployeeResponseDto> { employee });
+            return Ok(new PagedResultDto<EmployeeResponseDto>
+            {
+                Items = new List<EmployeeResponseDto> { employee },
+                TotalCount = 1,
+                PageNumber = 1,
+                PageSize = 1
+            });
         }
 
         [HttpGet("{employeeCode}")]

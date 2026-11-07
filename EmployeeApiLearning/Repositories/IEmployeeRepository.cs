@@ -1,10 +1,11 @@
-﻿using EmployeeApiLearning.Models;
+﻿using EmployeeApiLearning.DTO;
+using EmployeeApiLearning.Models;
 
 namespace EmployeeApiLearning.Repositories
 {
     public interface IEmployeeRepository
     {
-        Task<List<Employee>> GetAllAsync();
+        Task<(List<Employee> Employees, int TotalCount)> GetPagedAsync(EmployeeQueryParameters queryParameters);
         Task<Employee?> GetByIdAsync(int id);
         Task<Employee?> GetByCodeAsync(string employeeCode);
         Task<int> GetCountAsync();
