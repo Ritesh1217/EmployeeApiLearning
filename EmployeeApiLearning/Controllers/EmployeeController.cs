@@ -5,12 +5,14 @@ using EmployeeApiLearning.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EmployeeApiLearning.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
+    [EnableRateLimiting("fixed")]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;

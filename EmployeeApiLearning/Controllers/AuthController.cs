@@ -1,6 +1,7 @@
 ﻿using EmployeeApiLearning.DTO;
 using EmployeeApiLearning.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EmployeeApiLearning.Controllers
 {
@@ -33,6 +34,7 @@ namespace EmployeeApiLearning.Controllers
             });
         }
         [HttpPost("login")]
+        [EnableRateLimiting("auth-policy")]
         public async Task<IActionResult> Login(LoginDto login)
         {
             var result = await _authService.Login(login);
